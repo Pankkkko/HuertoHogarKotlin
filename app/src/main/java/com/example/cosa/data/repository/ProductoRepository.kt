@@ -4,7 +4,9 @@ import com.example.cosa.data.Enum.CategoriaENUM
 import com.example.cosa.data.model.Producto
 import kotlinx.coroutines.delay
 
-class ProductoRepository {
+class ProductoRepository(
+    private val remoteRepo: com.example.cosa.data.repository.ProductoRemoteRepository? = null
+) {
 
     private val productos = mutableListOf(
         Producto("fruit1","Manzanas Fuji","Manzanas Fuji crujientes y dulces, cultivadas en el Valle del Maule. Perfectas para meriendas saludables o como ingrediente en postres. Estas manzanas son conocidas por su textura firme y su sabor equilibrado entre dulce y ácido.",
@@ -21,10 +23,22 @@ class ProductoRepository {
             1500.0,"pimientos1","pimientos2","pimientos3","pimientos4",50, CategoriaENUM.VERDURAS_ORGANICAS),
         Producto("organicproduct1","Miel Organica","Miel pura y orgánica producida por apicultores locales. Rica en antioxidantes y con un sabor inigualable, perfecta para endulzar de manera natural tus comidas y bebidas.",
             5000.0,"miel1","miel2","miel3","miel4",50, CategoriaENUM.PRODUCTOS_ORGANICOS)
-
-
     )
+
     suspend fun obtenerProductos(): List<Producto>{
+        // Intentar obtener desde remoto si está disponible
+        if (remoteRepo != null) {
+            try {
+                val res = remoteRepo.obtenerTodos()
+                if (res.isSuccess) {
+                    val lista = res.getOrNull() ?: emptyList()
+                    return lista
+                }
+            } catch (_: Exception) {
+                // fallback a local
+            }
+        }
+
         delay(1000)
         return productos.toList()
     }
@@ -33,7 +47,7 @@ class ProductoRepository {
         delay(600)
         return productos.filter {
             it.nombre.contains(query, ignoreCase = true) ||
-            it.descripcion.contains(query, ignoreCase = true)
+                    it.descripcion.contains(query, ignoreCase = true)
         }
     }
 

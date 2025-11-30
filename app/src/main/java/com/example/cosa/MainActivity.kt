@@ -15,8 +15,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.room.Room
+import com.example.cosa.data.ServiceLocator
 import com.example.cosa.data.database.AppDatabase
 import com.example.cosa.data.repository.UsuarioRepository
+import com.example.cosa.data.repository.UsuarioRemoteRepository
+import com.example.cosa.data.remote.RetrofitClient
+import com.example.cosa.data.remote.api.UsuarioApi
 import com.example.cosa.presentation.ui.screens.*
 import com.example.cosa.presentation.viewmodel.*
 import com.example.cosa.ui.theme.CosaTheme
@@ -29,16 +33,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // 🔹 Inicializamos Room y Repository
-        val db = Room.databaseBuilder(
-            applicationContext,
-            AppDatabase::class.java,
-            "app-db"
-        ).fallbackToDestructiveMigration()
-            .build()
-
-        val usuarioDao = db.usuarioDao()
-        val repo = UsuarioRepository(usuarioDao)
+        val repo = ServiceLocator.createUsuarioRepository(this)
 
         // 🔹 Inicializamos SessionViewModel con factory
         val factory = SessionViewModelFactory(repo)
@@ -136,7 +131,10 @@ fun AppNavigation(sessionViewModel: SessionViewModel, cartViewModel: CartViewMod
             }
 
             val usuarioDao = remember { db.usuarioDao() }
-            val repo = remember { UsuarioRepository(usuarioDao) }
+            // Crear el remote repo y pasarlo al repo local
+            val usuarioApi: UsuarioApi = RetrofitClient.crearServicio(UsuarioApi::class.java)
+            val remoteRepo = remember { UsuarioRemoteRepository(usuarioApi) }
+            val repo = remember { UsuarioRepository(usuarioDao, remoteRepo) }
             val factory = remember { UsuarioViewModelFactory(repo) }
             val usuarioViewModel: UsuarioViewModel = viewModel(factory = factory)
 

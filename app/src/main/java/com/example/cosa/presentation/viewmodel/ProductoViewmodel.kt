@@ -1,7 +1,9 @@
 package com.example.cosa.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.cosa.data.ServiceLocator
 import com.example.cosa.data.repository.ProductoRepository
 import com.example.cosa.data.model.Producto
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -9,7 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class ProductoViewModel(
-    private val repository: ProductoRepository = ProductoRepository()
+    private val repository: ProductoRepository = ServiceLocator.createProductoRepository()
 ) : ViewModel() {
 
     private val _productos = MutableStateFlow<List<Producto>>(emptyList())
@@ -52,5 +54,15 @@ class ProductoViewModel(
 
     fun obtenerProductoPorId(id: String): Producto? {
         return productos.value.find { it.id.equals(id)  }
+    }
+
+    class Factory(private val repository: ProductoRepository) : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            if (modelClass.isAssignableFrom(ProductoViewModel::class.java)) {
+                @Suppress("UNCHECKED_CAST")
+                return ProductoViewModel(repository) as T
+            }
+            throw IllegalArgumentException("Unknown ViewModel class")
+        }
     }
 }

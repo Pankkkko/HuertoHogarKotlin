@@ -28,7 +28,7 @@ private val BgMain = Color(0xFFF7F7F7)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductosAdminScreen(navController: NavHostController) {
-    val repo = remember { ProductoRepository() }
+    val repo = remember { com.example.cosa.data.ServiceLocator.createProductoRepository() }
     val scope = rememberCoroutineScope()
 
     var productos by remember { mutableStateOf<List<Producto>>(emptyList()) }

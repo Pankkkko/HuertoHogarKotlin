@@ -26,6 +26,7 @@ import com.example.cosa.presentation.viewmodel.SessionViewModel
 import com.example.cosa.data.repository.ProductoRepository
 import com.example.cosa.data.database.AppDatabase
 import com.example.cosa.data.repository.VentaRepository
+import com.example.cosa.data.ServiceLocator
 
 @Composable
 fun AdminMainScreen(navController: NavHostController, sessionViewModel: SessionViewModel) {
@@ -33,7 +34,7 @@ fun AdminMainScreen(navController: NavHostController, sessionViewModel: SessionV
     val config = LocalConfiguration.current
     val screenWidthDp = config.screenWidthDp
 
-    val productoRepo = remember { ProductoRepository() }
+    val productoRepo = remember { ServiceLocator.createProductoRepository() }
     val ventaRepo = remember { VentaRepository() }
     val db = remember { AppDatabase.getDatabase(context) }
     val usuarioDao = remember { db.usuarioDao() }
