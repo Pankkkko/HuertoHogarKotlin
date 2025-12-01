@@ -14,4 +14,3 @@ interface ProductoApi {
     @GET("products/category/{categoria}")
     suspend fun obtenerPorCategoria(@Path("categoria") categoria: String): List<ProductoDto>
 }
-
