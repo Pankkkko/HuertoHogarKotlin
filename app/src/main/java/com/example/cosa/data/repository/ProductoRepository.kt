@@ -80,14 +80,5 @@ class ProductoRepository(
         productos.removeAll { it.id == id }
     }
 
-    private val api: ProductoApi = RetrofitClient.crearServicio(ProductoApi::class.java)
 
-    suspend fun crear(producto: ProductoDto): ProductoDto? {
-        return try {
-            api.crear(producto)
-        } catch (e: Exception) {
-            // opcional: log
-            null
-        }
-    }
 }

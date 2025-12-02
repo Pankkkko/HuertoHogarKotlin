@@ -25,12 +25,7 @@ class ProductoViewModel(
         cargarProductos()
     }
 
-    fun crearProducto(producto: ProductoDto, onResult: (ProductoDto?) -> Unit) {
-        viewModelScope.launch {
-            val creado = repository.crear(producto)
-            onResult(creado)
-        }
-    }
+
 
     fun cargarProductos() {
         viewModelScope.launch {
