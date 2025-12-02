@@ -1,5 +1,6 @@
 package com.example.cosa.data.remote
 
+import android.util.Log
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -8,25 +9,50 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
 
+    private const val TAG = "RetrofitClient"
+
     // URL base por defecto (FakeStore) - termina con '/'
     private const val DEFAULT_BASE_URL = "https://fakestoreapi.com/"
 
-    // Interceptor para ver las peticiones en Logcat
-    private val interceptorLog = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.BODY
+    // Interceptor para ver las peticiones en Logcat (solo si detectamos DEBUG)
+    private val interceptorLog: HttpLoggingInterceptor by lazy {
+        HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        }
     }
 
-    // Cliente HTTP con configuracion de timeouts
+    // Comprueba vía reflexión si BuildConfig.DEBUG está disponible y es true
+    private fun isDebugBuild(): Boolean {
+        return try {
+            val cls = Class.forName("com.example.cosa.BuildConfig")
+            val field = cls.getField("DEBUG")
+            field.getBoolean(null)
+        } catch (ex: Exception) {
+            false
+        }
+    }
+
+    // Cliente HTTP con configuracion de timeouts, agrega interceptor solo si es debug
     private val clienteHttp: OkHttpClient by lazy {
-        OkHttpClient.Builder()
-            .addInterceptor(interceptorLog)
+        val builder = OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
-            .build()
+            .writeTimeout(30, TimeUnit.SECONDS)
+
+        if (isDebugBuild()) {
+            try {
+                builder.addInterceptor(interceptorLog)
+            } catch (ignored: Exception) {
+                // no-op
+            }
+        }
+
+        builder.build()
     }
 
     // Crea una instancia de Retrofit para la baseUrl dada
     private fun crearRetrofit(baseUrl: String): Retrofit {
+        Log.d(TAG, "Creando Retrofit con baseUrl=$baseUrl")
         return Retrofit.Builder()
             .baseUrl(baseUrl)
             .client(clienteHttp)

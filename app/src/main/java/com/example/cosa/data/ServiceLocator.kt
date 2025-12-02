@@ -23,6 +23,11 @@ object ServiceLocator {
         return RetrofitClient.crearServicio(UsuarioApi::class.java)
     }
 
+    fun createProductoApi(baseUrl: String): ProductoApi {
+        return RetrofitClient.crearServicio(ProductoApi::class.java, baseUrl)
+    }
+
+    // Sobrecarga que mantiene la compatibilidad (usa DEFAULT_BASE_URL)
     fun createProductoApi(): ProductoApi {
         return RetrofitClient.crearServicio(ProductoApi::class.java)
     }
@@ -39,8 +44,8 @@ object ServiceLocator {
         return UsuarioRepository(usuarioDao, remote)
     }
 
-    fun createProductoRepository(): ProductoRepository {
-        val api = createProductoApi()
+    fun createProductoRepository(baseUrl: String? = null): ProductoRepository {
+        val api = if (baseUrl != null) createProductoApi(baseUrl) else createProductoApi()
         val remote = ProductoRemoteRepository(api)
         return ProductoRepository(remote)
     }
