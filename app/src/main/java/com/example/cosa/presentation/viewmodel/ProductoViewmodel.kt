@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.cosa.data.ServiceLocator
 import com.example.cosa.data.repository.ProductoRepository
 import com.example.cosa.data.model.Producto
+import com.example.cosa.data.remote.dto.ProductoDto
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -22,6 +23,13 @@ class ProductoViewModel(
 
     init {
         cargarProductos()
+    }
+
+    fun crearProducto(producto: ProductoDto, onResult: (ProductoDto?) -> Unit) {
+        viewModelScope.launch {
+            val creado = repository.crear(producto)
+            onResult(creado)
+        }
     }
 
     fun cargarProductos() {

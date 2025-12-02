@@ -2,6 +2,9 @@ package com.example.cosa.data.repository
 
 import com.example.cosa.data.Enum.CategoriaENUM
 import com.example.cosa.data.model.Producto
+import com.example.cosa.data.remote.RetrofitClient
+import com.example.cosa.data.remote.api.ProductoApi
+import com.example.cosa.data.remote.dto.ProductoDto
 import kotlinx.coroutines.delay
 
 class ProductoRepository(
@@ -75,5 +78,16 @@ class ProductoRepository(
     suspend fun eliminarProducto(id: String) {
         delay(100)
         productos.removeAll { it.id == id }
+    }
+
+    private val api: ProductoApi = RetrofitClient.crearServicio(ProductoApi::class.java)
+
+    suspend fun crear(producto: ProductoDto): ProductoDto? {
+        return try {
+            api.crear(producto)
+        } catch (e: Exception) {
+            // opcional: log
+            null
+        }
     }
 }

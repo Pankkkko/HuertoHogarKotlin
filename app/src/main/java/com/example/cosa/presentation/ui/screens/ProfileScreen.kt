@@ -1,18 +1,33 @@
 package com.example.cosa.presentation.ui.screens
 
+import android.Manifest
+import android.app.Activity
+import android.content.Context
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.cosa.presentation.ui.Components.HuertoNavbar
 import com.example.cosa.presentation.ui.Components.ModalComponent
 import com.example.cosa.presentation.viewmodel.SessionViewModel
-import com.example.cosa.data.model.Usuario
 import com.example.cosa.presentation.viewmodel.CartViewModel
 
 @Composable
@@ -21,15 +36,60 @@ fun ProfileScreen(
     sessionViewModel: SessionViewModel = viewModel(),
     cartViewModel: CartViewModel
 ) {
+    val context = LocalContext.current
+
     var showModal by remember { mutableStateOf(false) }
     var modalMessage by remember { mutableStateOf("") }
 
-    // Traemos los datos del usuario de SessionViewModel
     val user by sessionViewModel.currentUser.collectAsState()
 
-    // Estados locales para editar
     var username by remember(user) { mutableStateOf(user?.usuario ?: "") }
     var password by remember { mutableStateOf("") }
+
+    var profilePic by remember { mutableStateOf<Bitmap?>(null) }
+
+    // Cámara
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicturePreview()
+    ) { bitmap ->
+        if (bitmap != null) {
+            profilePic = bitmap
+        }
+    }
+
+    // Launcher para pedir permiso
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            cameraLauncher.launch(null)
+        } else {
+            Toast.makeText(context, "Permiso de cámara denegado", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Función para abrir cámara con permiso
+    fun openCameraWithPermission() {
+        when {
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                cameraLauncher.launch(null)
+            }
+
+            ActivityCompat.shouldShowRequestPermissionRationale(
+                context as Activity,
+                Manifest.permission.CAMERA
+            ) -> {
+                permissionLauncher.launch(Manifest.permission.CAMERA)
+            }
+
+            else -> {
+                permissionLauncher.launch(Manifest.permission.CAMERA)
+            }
+        }
+    }
 
     HuertoNavbar(
         navController = navController,
@@ -41,24 +101,54 @@ fun ProfileScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(16.dp)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
             Text(
                 "Mi Perfil",
                 fontSize = 24.sp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
+                modifier = Modifier.padding(bottom = 16.dp),
                 color = androidx.compose.ui.graphics.Color(0xFF2E8B57)
             )
+
+            // FOTO DE PERFIL
+            Box(
+                modifier = Modifier
+                    .size(140.dp)
+                    .background(
+                        androidx.compose.ui.graphics.Color(0xFF2E8B57).copy(alpha = 0.1f),
+                        shape = MaterialTheme.shapes.medium
+                    )
+                    .clickable { openCameraWithPermission() },
+                contentAlignment = Alignment.Center
+            ) {
+                if (profilePic != null) {
+                    Image(
+                        bitmap = profilePic!!.asImageBitmap(),
+                        contentDescription = "Foto de perfil",
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Text(
+                        "Tocar para tomar foto",
+                        fontSize = 12.sp,
+                        color = androidx.compose.ui.graphics.Color(0xFF2E8B57)
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(20.dp))
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
 
-                    // Correo
                     OutlinedTextField(
                         value = user?.correo ?: "",
                         onValueChange = {},
@@ -67,7 +157,6 @@ fun ProfileScreen(
                         readOnly = true
                     )
 
-                    // Nombre de usuario
                     OutlinedTextField(
                         value = username,
                         onValueChange = { username = it },
@@ -75,7 +164,6 @@ fun ProfileScreen(
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    // Nueva contraseña
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
@@ -85,28 +173,31 @@ fun ProfileScreen(
                         visualTransformation = PasswordVisualTransformation()
                     )
 
-                    // Botón guardar cambios
                     Button(
                         onClick = {
-                            // Lógica de actualización
                             sessionViewModel.updateUser(
                                 updatedUsername = username,
                                 updatedPassword = if (password.isNotBlank()) password else null
                             ) { success ->
-                                modalMessage = if (success) "Perfil actualizado correctamente" else "Error al actualizar"
+                                modalMessage = if (success)
+                                    "Perfil actualizado correctamente"
+                                else
+                                    "Error al actualizar"
+
                                 showModal = true
-                                password = "" // Limpiar input de password
+                                password = ""
                             }
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = androidx.compose.ui.graphics.Color(0xFF2E8B57))
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = androidx.compose.ui.graphics.Color(0xFF2E8B57)
+                        )
                     ) {
                         Text("Guardar cambios", color = androidx.compose.ui.graphics.Color.White)
                     }
                 }
             }
 
-            // Modal de feedback
             ModalComponent(
                 show = showModal,
                 title = "Perfil",
