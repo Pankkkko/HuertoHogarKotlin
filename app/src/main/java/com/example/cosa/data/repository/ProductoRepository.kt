@@ -1,5 +1,6 @@
 package com.example.cosa.data.repository
 
+import android.util.Log
 import com.example.cosa.data.Enum.CategoriaENUM
 import com.example.cosa.data.model.Producto
 import com.example.cosa.data.remote.RetrofitClient
@@ -10,6 +11,8 @@ import kotlinx.coroutines.delay
 class ProductoRepository(
     private val remoteRepo: com.example.cosa.data.repository.ProductoRemoteRepository? = null
 ) {
+
+    private val TAG = "ProductoRepository"
 
     private val productos = mutableListOf(
         Producto("fruit1","Manzanas Fuji","Manzanas Fuji crujientes y dulces, cultivadas en el Valle del Maule. Perfectas para meriendas saludables o como ingrediente en postres. Estas manzanas son conocidas por su textura firme y su sabor equilibrado entre dulce y ácido.",
@@ -60,6 +63,22 @@ class ProductoRepository(
     }
     // Nuevo: agregar producto (genera id sencillo)
     suspend fun agregarProducto(producto: Producto) {
+        // Si hay remoteRepo intentar crear remoto y si falla, caer a local
+        if (remoteRepo != null) {
+            try {
+                val res = remoteRepo.crear(producto)
+                if (res.isSuccess) {
+                    Log.d(TAG, "Producto creado remotamente")
+                    // refrescar lista local con datos remotos opcionalmente (simplemente retornar)
+                    return
+                } else {
+                    Log.w(TAG, "Crear remoto falló, usando fallback local")
+                }
+            } catch (ex: Exception) {
+                Log.w(TAG, "Error al crear remoto, fallback local: ${'$'}{ex.message}")
+            }
+        }
+
         delay(100)
         // generar id único simple
         val nuevoId = "p${System.currentTimeMillis()}"
