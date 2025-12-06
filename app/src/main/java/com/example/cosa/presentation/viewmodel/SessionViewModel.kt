@@ -94,7 +94,7 @@ class SessionViewModel(private val usuarioRepository: UsuarioRepository) : ViewM
         viewModelScope.launch {
             try {
                 val updatedUser = user.copy(
-                    usuario = updatedUsername,
+                    nombre = updatedUsername,
                     pass = updatedPassword ?: user.pass
                 )
                 usuarioRepository.actualizarUsuario(updatedUser) // <--- usar update

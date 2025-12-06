@@ -43,7 +43,7 @@ class ProductoViewModel(
         }
     }
 
-    fun filtrarPorCategoria(categoria: com.example.cosa.data.Enum.CategoriaENUM?) {
+    fun filtrarPorCategoria(categoria: String) {
         viewModelScope.launch {
             _isLoading.value = true
             _productos.value = if (categoria == null) {

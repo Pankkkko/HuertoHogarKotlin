@@ -16,7 +16,7 @@ interface UsuarioDAO {
     @Query("SELECT * FROM usuarios WHERE correo = :correo LIMIT 1")
     suspend fun getUsuarioPorCorreo(correo: String): Usuario?
 
-    @Query("SELECT * FROM usuarios WHERE usuario = :usuario LIMIT 1")
+    @Query("SELECT * FROM usuarios WHERE nombre = :usuario LIMIT 1")
     suspend fun getUsuarioPorNombre(usuario: String): Usuario?
 
     @Query("SELECT * FROM usuarios")
@@ -25,7 +25,7 @@ interface UsuarioDAO {
     @Query("DELETE FROM usuarios WHERE id = :id")
     suspend fun deleteById(id: Int)
 
-    @Query("UPDATE usuarios SET rut = :rut, usuario = :usuario, correo = :correo, pass = :pass WHERE id = :id")
+    @Query("UPDATE usuarios SET rol = :rut, nombre = :usuario, correo = :correo, pass = :pass WHERE id = :id")
     suspend fun updateById(id: Int, rut: String, usuario: String, correo: String, pass: String)
 
 

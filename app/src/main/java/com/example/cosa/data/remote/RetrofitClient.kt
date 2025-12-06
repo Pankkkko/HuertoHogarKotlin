@@ -12,7 +12,7 @@ object RetrofitClient {
     private const val TAG = "RetrofitClient"
 
     // URL base por defecto (FakeStore) - termina con '/'
-    private const val DEFAULT_BASE_URL = "https://fakestoreapi.com/"
+    private const val DEFAULT_BASE_URL = "http://10.0.2.2:8080"
 
     // Interceptor para ver las peticiones en Logcat (solo si detectamos DEBUG)
     private val interceptorLog: HttpLoggingInterceptor by lazy {

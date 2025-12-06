@@ -77,8 +77,7 @@ fun UsuariosAdminScreen(navController: NavHostController) {
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
                     items(usuarios) { u ->
                         Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Text(u.usuario, modifier = Modifier.weight(2f), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                            Text(u.rut, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text(u.nombre, modifier = Modifier.weight(2f), maxLines = 1, overflow = TextOverflow.Ellipsis)
                             Text(u.correo, modifier = Modifier.weight(2f), maxLines = 1, overflow = TextOverflow.Ellipsis)
 
                             // Acciones: ancho mínimo para que los iconos no queden cortados
@@ -86,8 +85,7 @@ fun UsuariosAdminScreen(navController: NavHostController) {
                                 IconButton(onClick = {
                                     // preparar diálogo edición
                                     usuarioAEditar = u
-                                    editRut = u.rut
-                                    editUsuario = u.usuario
+                                    editUsuario = u.nombre
                                     editCorreo = u.correo
                                     editPass = u.pass
                                     mostrarDialogEdicion = true

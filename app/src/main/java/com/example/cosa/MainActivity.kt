@@ -72,7 +72,17 @@ fun AppNavigation(sessionViewModel: SessionViewModel, cartViewModel: CartViewMod
 
         // 🛒 Productos
         composable("productos") {
-            val productoViewModel: ProductoViewModel = viewModel()
+            // Crear repo hacia tu backend local
+            val repo = remember {
+                ServiceLocator.createProductoRepository("http://10.0.2.2:8080")
+            }
+
+            // Crear factory
+            val factory = remember { ProductoViewModelFactory(repo) }
+
+            // Crear ViewModel con repo real
+            val productoViewModel: ProductoViewModel = viewModel(factory = factory)
+
             ProductosScreen(
                 viewModel = productoViewModel,
                 navController = navController,

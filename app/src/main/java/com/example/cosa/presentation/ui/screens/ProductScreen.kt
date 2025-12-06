@@ -28,18 +28,7 @@ fun ProductosScreen(viewModel: ProductoViewModel, navController: NavController, 
 
     var categoriaSeleccionada by remember { mutableStateOf("Todos") }
 
-    val categoriaEnum = when (categoriaSeleccionada) {
-        "Frutas" -> CategoriaENUM.FRUTAS_FRESCAS
-        "Verduras" -> CategoriaENUM.VERDURAS_ORGANICAS
-        "Orgánicos" -> CategoriaENUM.PRODUCTOS_ORGANICOS
-        "Lácteos" -> CategoriaENUM.PRODUCTOS_LACTEOS
-        else -> null
-    }
 
-    // Filtra desde el repo cada vez que cambie la categoría
-    LaunchedEffect(categoriaEnum) {
-        viewModel.filtrarPorCategoria(categoriaEnum)
-    }
 
     HuertoNavbar(navController = navController, sessionViewModel = sessionViewModel, cartViewModel = cartViewModel) { innerPadding ->
         Column(

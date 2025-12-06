@@ -108,7 +108,9 @@ fun RegisterScreen(
                                 nombreUsuario = nombreUsuario.trim(),
                                 correo = correo.trim(),
                                 password = password,
-                                repetirPassword = repetirPassword
+                                repetirPassword = repetirPassword,
+                                rol = "cliente",
+                                activo = true
                             ) { success, message ->
                                 modalTitle = if (success) "Éxito" else "Error"
                                 modalMessage = message

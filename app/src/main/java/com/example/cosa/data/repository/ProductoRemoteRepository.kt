@@ -25,30 +25,15 @@ class ProductoRemoteRepository(private val api: ProductoApi) {
                 Result.failure(IOException("HTTP ${'$'}{respuesta.code()} ${'$'}{respuesta.message()}"))
             }
         } catch (ex: IOException) {
-            Log.e(TAG, "IO error al obtener productos: ${'$'}{ex.message}")
+            Log.e(TAG, "IO error al obtener productos: ${ex.message}")
             Result.failure(ex)
         } catch (ex: Exception) {
-            Log.e(TAG, "Error inesperado al obtener productos: ${'$'}{ex.message}")
+            Log.e(TAG, "Error inesperado al obtener productos: ${ex.message}")
             Result.failure(ex)
         }
     }
 
-    suspend fun obtenerPorCategoria(categoria: String): Result<List<Producto>> = withContext(Dispatchers.IO) {
-        try {
-            val respuesta = api.obtenerPorCategoria(categoria)
-            if (respuesta.isSuccessful) {
-                val listaDto = respuesta.body() ?: emptyList()
-                Log.d(TAG, "API OK categoria=$categoria: ${'$'}{listaDto.size} items")
-                Result.success(listaDto.map { it.aModelo() })
-            } else {
-                Log.w(TAG, "API HTTP error categoria: ${'$'}{respuesta.code()} ${'$'}{respuesta.message()}" )
-                Result.failure(IOException("HTTP ${'$'}{respuesta.code()} ${'$'}{respuesta.message()}"))
-            }
-        } catch (ex: Exception) {
-            Log.e(TAG, "Error al obtener por categoria: ${'$'}{ex.message}")
-            Result.failure(ex)
-        }
-    }
+
 
     suspend fun obtenerPorId(id: Int): Result<Producto> = withContext(Dispatchers.IO) {
         try {

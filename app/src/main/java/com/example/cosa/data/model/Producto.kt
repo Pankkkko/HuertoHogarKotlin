@@ -14,7 +14,7 @@ data class Producto(
     val imagen3 : String,
     val imagen4 : String,
     val stock: Int,
-    val categoria: CategoriaENUM
+    val categoria: String
 ) {
     val disponible:Boolean
         get() = stock > 0

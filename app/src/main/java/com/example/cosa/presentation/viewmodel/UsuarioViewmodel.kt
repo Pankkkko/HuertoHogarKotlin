@@ -14,6 +14,8 @@ class UsuarioViewModel(private val repo: UsuarioRepository) : ViewModel() {
         correo: String,
         password: String,
         repetirPassword: String,
+        rol: String,
+        activo: Boolean,
         onResult: (Boolean, String) -> Unit
     ) {
         viewModelScope.launch {
@@ -48,10 +50,11 @@ class UsuarioViewModel(private val repo: UsuarioRepository) : ViewModel() {
 
             // 5️⃣ Crear usuario y guardar
             val usuario = Usuario(
-                rut = rut,
-                usuario = nombreUsuario,
+                nombre = nombreUsuario,
                 correo = correo,
-                pass = password // luego lo encriptamos 🔒
+                pass = password,
+                rol = rol,
+                activo = activo
             )
 
             repo.registrar(usuario)

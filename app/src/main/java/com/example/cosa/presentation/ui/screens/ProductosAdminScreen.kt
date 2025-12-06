@@ -96,7 +96,7 @@ fun ProductosAdminScreen(navController: NavHostController) {
                                 imagen3 = "",
                                 imagen4 = "",
                                 stock = stock.toIntOrNull() ?: 0,
-                                categoria = com.example.cosa.data.Enum.CategoriaENUM.FRUTAS_FRESCAS
+                                categoria = ""
                             )
                             scope.launch {
                                 if (editarProducto == null) {

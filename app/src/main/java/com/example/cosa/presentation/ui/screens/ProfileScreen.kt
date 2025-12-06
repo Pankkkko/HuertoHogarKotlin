@@ -43,7 +43,7 @@ fun ProfileScreen(
 
     val user by sessionViewModel.currentUser.collectAsState()
 
-    var username by remember(user) { mutableStateOf(user?.usuario ?: "") }
+    var username by remember(user) { mutableStateOf(user?.nombre ?: "") }
     var password by remember { mutableStateOf("") }
 
     var profilePic by remember { mutableStateOf<Bitmap?>(null) }

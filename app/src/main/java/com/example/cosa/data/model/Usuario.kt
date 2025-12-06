@@ -6,9 +6,10 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "usuarios")
 data class Usuario(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val rut: String,
-    val usuario: String,
     val correo: String,
-    val pass: String
+    val pass: String,
+    val nombre: String,
+    val rol: String,
+    val activo: Boolean
 ) {
 }

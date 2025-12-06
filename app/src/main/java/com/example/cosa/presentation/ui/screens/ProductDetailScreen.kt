@@ -115,7 +115,7 @@ fun ProductDetailScreen(
                                 )
                                 Text("  >  ")
                                 Text(
-                                    text = producto.categoria.name.replace('_', ' '),
+                                    text = producto.categoria.replace('_', ' '),
                                     color = Color(0xFF2E8B57),
                                     modifier = Modifier.clickable {
                                         navController.navigate("productos")

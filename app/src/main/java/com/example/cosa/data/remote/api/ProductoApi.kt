@@ -8,15 +8,13 @@ import retrofit2.http.Path
 import retrofit2.http.POST
 
 interface ProductoApi {
-    @GET("products")
+    @GET("/api/productos")
     suspend fun obtenerTodos(): Response<List<ProductoDto>>
 
-    @GET("products/{id}")
+    @GET("/api/productos/{id}")
     suspend fun obtenerPorId(@Path("id") id: Int): Response<ProductoDto>
 
-    @GET("products/categoria/{categoria}")
-    suspend fun obtenerPorCategoria(@Path("categoria") categoria: String): Response<List<ProductoDto>>
 
-    @POST("products")
+    @POST("/api/productos")
     suspend fun crear(@Body producto: ProductoDto): Response<ProductoDto>
 }

@@ -7,37 +7,46 @@ data class UsuarioDto(
     @SerializedName("id")
     val id: Int = 0,
 
-    @SerializedName("rut")
-    val rut: String,
+    @SerializedName("email")
+    val email: String,
 
-    @SerializedName("usuario")
-    val usuario: String,
 
-    @SerializedName("correo")
-    val correo: String,
+    @SerializedName("password")
+    val pass: String,
 
-    @SerializedName("pass")
-    val pass: String
+    @SerializedName("nombre")
+    val nombre: String,
+
+    @SerializedName("rol")
+    val rol: String,
+
+    @SerializedName("activo")
+    val activo: Boolean
+
+
 )
 
 // Mapeos entre DTO y modelo de dominio
 fun UsuarioDto.aDominio(): Usuario {
     return Usuario(
-        id = this.id,
-        rut = this.rut,
-        usuario = this.usuario,
-        correo = this.correo,
-        pass = this.pass
+        id = id,
+        correo = email,
+        pass = pass,
+        nombre = nombre,
+        rol = rol,
+        activo = activo
     )
 }
 
 fun Usuario.aDto(): UsuarioDto {
     return UsuarioDto(
-        id = this.id,
-        rut = this.rut,
-        usuario = this.usuario,
-        correo = this.correo,
-        pass = this.pass
+        id = id,
+        email = correo,
+        pass = pass,
+        nombre = nombre,
+        rol = rol,
+        activo = activo
+
     )
 }
 
