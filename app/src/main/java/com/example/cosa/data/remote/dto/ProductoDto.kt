@@ -17,17 +17,22 @@ data class ProductoDto(
     @SerializedName("imagen3") val imagen3: String,
     @SerializedName("imagen4") val imagen4: String
 )
-
+private fun fixUrl(url: String): String {
+    return if (url.startsWith("http")) url
+    else "http://10.0.2.2:8080/uploads$url"
+}
 fun ProductoDto.aModelo(): Producto {
+
+
     return Producto(
         id = id.toString(),
         nombre = nombre,
         descripcion = descripcion,
         precio = precio,
-        imagen1 = imagen,
-        imagen2 = imagen2,
-        imagen3 = imagen3,
-        imagen4 = imagen4,
+        imagen1 = fixUrl(imagen),
+        imagen2 = fixUrl(imagen2),
+        imagen3 = fixUrl(imagen3),
+        imagen4 = fixUrl(imagen4),
         stock = stock,
         categoria = categoria
 
@@ -40,10 +45,10 @@ fun Producto.aDto(): ProductoDto {
         nombre = nombre,
         descripcion = descripcion,
         precio = precio,
-        imagen = imagen1,
-        imagen2 = imagen2,
-        imagen3 = imagen3,
-        imagen4 = imagen4,
+        imagen = fixUrl(imagen1),
+        imagen2 = fixUrl(imagen2),
+        imagen3 = fixUrl(imagen3),
+        imagen4 = fixUrl(imagen4),
         stock = stock,
         activo = stock > 0,
         categoria = categoria

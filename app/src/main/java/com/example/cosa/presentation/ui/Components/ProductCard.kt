@@ -1,7 +1,6 @@
 // File: ProductoCard.kt
 package com.example.cosa.presentation.ui.Components
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -9,18 +8,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.cosa.data.model.Producto
-
+import coil.compose.AsyncImage
+import android.util.Log
 
 @Composable
 fun ProductoCard(producto: Producto, navController: NavController) {
-    val context = LocalContext.current
 
     Card(
         modifier = Modifier
@@ -31,23 +28,37 @@ fun ProductoCard(producto: Producto, navController: NavController) {
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
 
-            // Imagen principal del producto
-            val imageResId = context.resources.getIdentifier(
-                producto.imagen1,
-                "drawable",
-                context.packageName
-            )
+            // ------------------------------------------------------------------
+            // 🔥 FIX DE URL PARA IMAGENES DESDE EL BACKEND 🔥
+            // Esto convierte:
+            // "/manzana.jpg" -> http://10.0.2.2:8080/uploads/manzana.jpg
+            // "/uploads/manzana.jpg" -> http://10.0.2.2:8080/uploads/manzana.jpg
+            // "manzana.jpg" -> http://10.0.2.2:8080/uploads/manzana.jpg
+            // Ya no usa drawables locales
+            // ------------------------------------------------------------------
 
-            if (imageResId != 0) {
-                Image(
-                    painter = painterResource(id = imageResId),
-                    contentDescription = producto.nombre,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp),
-                    contentScale = ContentScale.Crop
-                )
+            val imagen = producto.imagen1 ?: ""
+
+            val finalUrl = when {
+                imagen.startsWith("http") -> imagen
+                imagen.startsWith("/uploads") -> "http://10.0.2.2:8080$imagen"
+                imagen.startsWith("/") -> "http://10.0.2.2:8080/uploads$imagen"
+                else -> "http://10.0.2.2:8080/uploads/$imagen"
             }
+
+            Log.d("IMG_URL", "Cargando imagen desde: $finalUrl")
+
+            // ------------------------------------------------------------------
+            // 🔥 Cargar imagen remota con Coil
+            // ------------------------------------------------------------------
+            AsyncImage(
+                model = finalUrl,
+                contentDescription = producto.nombre,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(180.dp),
+                contentScale = ContentScale.Crop
+            )
 
             Spacer(modifier = Modifier.height(8.dp))
 

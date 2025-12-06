@@ -1,7 +1,6 @@
 package com.example.cosa.presentation.ui.screens
 
-import android.content.res.Resources
-import androidx.compose.foundation.Image
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -21,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.example.cosa.R
 import com.example.cosa.data.model.Producto
 import com.example.cosa.presentation.ui.Components.HuertoNavbar
@@ -42,7 +42,6 @@ fun ProductDetailScreen(
     val productos by viewModel.productos.collectAsState(initial = emptyList())
     val isLoading by viewModel.isLoading.collectAsState(initial = true)
     val context = LocalContext.current
-    val resources: Resources = context.resources
 
     val producto: Producto? = productos.find { it.id == productoId }
 
@@ -59,17 +58,36 @@ fun ProductDetailScreen(
         return "$$whole"
     }
 
+    // ===============================
+    //   FIX DE URL → NO DUPLICA MÁS
+    // ===============================
+    fun imagenUrl(nombre: String?): String {
+        if (nombre.isNullOrBlank()) return ""
+
+        // Si ya es URL completa, no la tocamos
+        if (nombre.startsWith("http")) {
+            Log.d("IMG_URL", "URL final (ya venía completa) = $nombre")
+            return nombre
+        }
+
+        val final = "http://10.0.2.2:8080/uploads/$nombre"
+        Log.d("IMG_URL", "URL final = $final")
+        return final
+    }
+
     HuertoNavbar(
         navController = navController,
         sessionViewModel = sessionViewModel,
         cartViewModel = cartViewModel
     ) { innerPadding ->
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color(0xFFF5F5F5))
                 .padding(innerPadding)
         ) {
+
             when {
                 isLoading -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -105,8 +123,9 @@ fun ProductDetailScreen(
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
+
+                        // BREADCRUMB
                         item {
-                            // breadcrumb
                             Row(modifier = Modifier.fillMaxWidth()) {
                                 Text(
                                     text = "Inicio",
@@ -127,76 +146,72 @@ fun ProductDetailScreen(
                             Spacer(modifier = Modifier.height(12.dp))
                         }
 
+                        // CONTENIDO
                         item {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                // IMAGEN PRINCIPAL + THUMBS
-                                Column(modifier = Modifier.weight(1f)) {
-                                    val mainResId = resources.getIdentifier(
-                                        imagenPrincipal,
-                                        "drawable",
-                                        context.packageName
-                                    )
-                                    val mainPainter = if (mainResId != 0)
-                                        painterResource(id = mainResId)
-                                    else
-                                        painterResource(id = R.drawable.iconmain)
 
-                                    Card(
+                                // =============================
+                                //     IMAGEN PRINCIPAL
+                                // =============================
+                                Column(modifier = Modifier.weight(1f)) {
+
+                                    AsyncImage(
+                                        model = imagenUrl(imagenPrincipal),
+                                        contentDescription = producto.nombre,
+                                        contentScale = ContentScale.Crop,
+                                        placeholder = painterResource(id = R.drawable.iconmain),
+                                        error = painterResource(id = R.drawable.iconmain),
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .height(300.dp),
-                                        shape = RoundedCornerShape(8.dp),
-                                    ) {
-                                        Image(
-                                            painter = mainPainter,
-                                            contentDescription = producto.nombre,
-                                            modifier = Modifier.fillMaxSize(),
-                                            contentScale = ContentScale.Crop
-                                        )
-                                    }
+                                            .height(300.dp)
+                                            .clip(RoundedCornerShape(8.dp)),
+                                        onError = { state ->
+                                            Log.e("IMG_ERROR", "Error cargando imagen: ${state.result.throwable?.message}")
+                                        }
+                                    )
 
                                     Spacer(modifier = Modifier.height(8.dp))
 
+                                    // THUMBNAILS
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
-                                        val thumbs = listOf(
+                                        listOf(
                                             producto.imagen1,
                                             producto.imagen2,
                                             producto.imagen3,
                                             producto.imagen4
-                                        )
-                                        thumbs.forEach { imgName ->
-                                            val resId = resources.getIdentifier(
-                                                imgName,
-                                                "drawable",
-                                                context.packageName
-                                            )
-                                            val painter = if (resId != 0)
-                                                painterResource(id = resId)
-                                            else
-                                                painterResource(id = R.drawable.iconmain)
+                                        ).forEach { imgName ->
 
-                                            Image(
-                                                painter = painter,
+                                            AsyncImage(
+                                                model = imagenUrl(imgName),
                                                 contentDescription = imgName,
+                                                contentScale = ContentScale.Crop,
+                                                placeholder = painterResource(id = R.drawable.iconmain),
+                                                error = painterResource(id = R.drawable.iconmain),
                                                 modifier = Modifier
                                                     .size(60.dp)
                                                     .clip(RoundedCornerShape(6.dp))
-                                                    .clickable { imagenPrincipal = imgName },
-                                                contentScale = ContentScale.Crop
+                                                    .clickable { imagenPrincipal = imgName ?: "" },
+                                                onError = { state ->
+                                                    Log.e("IMG_ERROR", "Error cargando thumbnail: ${state.result.throwable?.message}")
+                                                }
                                             )
                                         }
                                     }
                                 }
 
-                                // DETALLE Y COMPRA
+                                // =============================
+                                //   DATOS Y BOTÓN CARRITO
+                                // =============================
                                 Column(modifier = Modifier.weight(1f)) {
+
                                     Text(producto.nombre, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+
                                     Spacer(modifier = Modifier.height(8.dp))
 
                                     Text(
@@ -214,6 +229,7 @@ fun ProductDetailScreen(
                                     Spacer(modifier = Modifier.height(12.dp))
 
                                     Text("Cantidad:", fontWeight = FontWeight.Medium)
+
                                     OutlinedTextField(
                                         value = cantidadText,
                                         onValueChange = { new ->
@@ -226,25 +242,24 @@ fun ProductDetailScreen(
 
                                     Spacer(modifier = Modifier.height(12.dp))
 
-                                    // ✅ Botón Añadir al carrito
                                     Button(
                                         onClick = {
                                             val cantidad = cantidadText.toIntOrNull() ?: 0
                                             if (cantidad < 1) {
                                                 dialogTitle = "Error"
-                                                dialogMessage = "Por favor ingresa una cantidad válida (mínimo 1)."
+                                                dialogMessage = "Por favor ingresa una cantidad válida."
                                                 showDialog = true
                                                 return@Button
                                             }
 
-                                            // 💚 Agregar al carrito
                                             val item = CartItem(
                                                 productoId = producto.id,
                                                 nombre = producto.nombre,
                                                 precio = producto.precio,
                                                 cantidad = cantidad,
-                                                imagenResName = producto.imagen1
+                                                imagenResName = imagenUrl(producto.imagen1)
                                             )
+
                                             cartViewModel.addProduct(item)
 
                                             dialogTitle = "Producto agregado!"
@@ -265,15 +280,12 @@ fun ProductDetailScreen(
                                 }
                             }
                         }
-
-                        
                     }
                 }
             }
         }
     }
 
-    // AlertDialog de confirmación
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
