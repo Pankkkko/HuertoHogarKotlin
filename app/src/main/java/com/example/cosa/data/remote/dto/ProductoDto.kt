@@ -2,10 +2,9 @@ package com.example.cosa.data.remote.dto
 
 import com.example.cosa.data.model.Producto
 import com.google.gson.annotations.SerializedName
-import com.example.cosa.data.Enum.CategoriaENUM
 
 data class ProductoDto(
-    @SerializedName("id") val id: Int,
+    @SerializedName("id") val id: Int? = null,
     @SerializedName("nombre") val nombre: String,
     @SerializedName("categoria") val categoria: String,
     @SerializedName("precio") val precio: Double,
@@ -17,15 +16,15 @@ data class ProductoDto(
     @SerializedName("imagen3") val imagen3: String,
     @SerializedName("imagen4") val imagen4: String
 )
+
 private fun fixUrl(url: String): String {
     return if (url.startsWith("http")) url
     else "http://10.0.2.2:8080/uploads$url"
 }
+
 fun ProductoDto.aModelo(): Producto {
-
-
     return Producto(
-        id = id.toString(),
+        id = (id ?: 0).toString(),
         nombre = nombre,
         descripcion = descripcion,
         precio = precio,
@@ -35,23 +34,21 @@ fun ProductoDto.aModelo(): Producto {
         imagen4 = fixUrl(imagen4),
         stock = stock,
         categoria = categoria
-
     )
 }
 
 fun Producto.aDto(): ProductoDto {
     return ProductoDto(
-        id = id.toIntOrNull() ?: 0,
+        id = null, // Spring genera el ID
         nombre = nombre,
         descripcion = descripcion,
         precio = precio,
-        imagen = fixUrl(imagen1),
-        imagen2 = fixUrl(imagen2),
-        imagen3 = fixUrl(imagen3),
-        imagen4 = fixUrl(imagen4),
+        imagen = imagen1,   // ← NO URLs
+        imagen2 = imagen2,  // ← SOLO nombres
+        imagen3 = imagen3,
+        imagen4 = imagen4,
         stock = stock,
         activo = stock > 0,
         categoria = categoria
     )
 }
-

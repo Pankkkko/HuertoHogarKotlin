@@ -6,15 +6,21 @@ import com.example.cosa.data.model.Producto
 import com.example.cosa.data.remote.RetrofitClient
 import com.example.cosa.data.remote.api.ProductoApi
 import com.example.cosa.data.remote.dto.ProductoDto
+import com.example.cosa.data.remote.dto.aDto
+import com.example.cosa.data.remote.dto.aModelo
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
+import java.io.IOException
 
 class ProductoRepository(
-    private val remoteRepo: com.example.cosa.data.repository.ProductoRemoteRepository? = null
+    private val remoteRepo: ProductoRemoteRepository? = null,
 ) {
 
     private val TAG = "ProductoRepository"
 
     private val productos = mutableListOf(
+        // (no modificado)
         Producto("fruit1","Manzanas Fuji","Manzanas Fuji crujientes y dulces, cultivadas en el Valle del Maule. Perfectas para meriendas saludables o como ingrediente en postres. Estas manzanas son conocidas por su textura firme y su sabor equilibrado entre dulce y ácido.",
             1200.0,"fruit1","manzanafuji2","manzanafuji3","manzanafuji4",50, "Frutas Frescas"),
         Producto("fruit2","Naranjas Valencianas","Jugosas y ricas en vitamina C, estas naranjas Valencia son ideales para zumos frescos y refrescantes. Cultivadas en condiciones climáticas óptimas que aseguran su dulzura y jugosidad",
@@ -32,55 +38,32 @@ class ProductoRepository(
     )
 
     suspend fun obtenerProductos(): List<Producto>{
-        // Intentar obtener desde remoto si está disponible
         if (remoteRepo != null) {
             try {
                 val res = remoteRepo.obtenerTodos()
-                if (res.isSuccess) {
-                    val lista = res.getOrNull() ?: emptyList()
-                    return lista
-                }
-            } catch (_: Exception) {
-                // fallback a local
-            }
+                if (res.isSuccess) return res.getOrNull() ?: emptyList()
+            } catch (_: Exception) {}
         }
 
         delay(1000)
         return productos.toList()
     }
 
-    suspend fun buscarProducto(query: String): List<Producto> {
-        delay(600)
-        return productos.filter {
-            it.nombre.contains(query, ignoreCase = true) ||
-                    it.descripcion.contains(query, ignoreCase = true)
-        }
-    }
-
-    suspend fun buscarCategoria(categoria: String): List<Producto>{
-        delay(300)
-        return productos.filter { it.categoria == categoria }
-    }
-    // Nuevo: agregar producto (genera id sencillo)
     suspend fun agregarProducto(producto: Producto) {
-        // Si hay remoteRepo intentar crear remoto y si falla, caer a local
+
         if (remoteRepo != null) {
             try {
                 val res = remoteRepo.crear(producto)
                 if (res.isSuccess) {
                     Log.d(TAG, "Producto creado remotamente")
-                    // refrescar lista local con datos remotos opcionalmente (simplemente retornar)
                     return
-                } else {
-                    Log.w(TAG, "Crear remoto falló, usando fallback local")
                 }
             } catch (ex: Exception) {
-                Log.w(TAG, "Error al crear remoto, fallback local: ${'$'}{ex.message}")
+                Log.w(TAG, "Error remoto, fallback local: ${ex.message}")
             }
         }
 
         delay(100)
-        // generar id único simple
         val nuevoId = "p${System.currentTimeMillis()}"
         val p = producto.copy(id = nuevoId)
         productos.add(p)

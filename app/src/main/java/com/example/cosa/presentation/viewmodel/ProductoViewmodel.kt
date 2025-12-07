@@ -35,15 +35,15 @@ class ProductoViewModel(
         }
     }
 
-    fun buscarProducto(query: String) {
+    /*fun buscarProducto(query: String) {
         viewModelScope.launch {
             _isLoading.value = true
             _productos.value = repository.buscarProducto(query)
             _isLoading.value = false
         }
-    }
+    }*/
 
-    fun filtrarPorCategoria(categoria: String) {
+    /*fun filtrarPorCategoria(categoria: String) {
         viewModelScope.launch {
             _isLoading.value = true
             _productos.value = if (categoria == null) {
@@ -53,7 +53,7 @@ class ProductoViewModel(
             }
             _isLoading.value = false
         }
-    }
+    }*/
 
     fun obtenerProductoPorId(id: String): Producto? {
         return productos.value.find { it.id.equals(id)  }
