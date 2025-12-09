@@ -14,6 +14,7 @@ import androidx.navigation.NavController
 import com.example.cosa.presentation.ui.Components.CartItemRow
 import com.example.cosa.presentation.ui.Components.HuertoNavbar
 import com.example.cosa.presentation.ui.Components.ModalComponent
+import com.example.cosa.presentation.ui.Components.ReceiptDialog
 import com.example.cosa.presentation.viewmodel.CartViewModel
 import com.example.cosa.presentation.viewmodel.SessionViewModel
 
@@ -23,7 +24,8 @@ fun CartScreen(
     cartViewModel: CartViewModel = viewModel(),
     sessionViewModel: SessionViewModel
 ) {
-    var showModal by remember { mutableStateOf(false) }
+    var showReceipt by remember { mutableStateOf(false) }
+    var showConfirmation by remember { mutableStateOf(false) }
 
     HuertoNavbar(
         navController = navController,
@@ -31,7 +33,8 @@ fun CartScreen(
         cartViewModel = cartViewModel
     ) { innerPadding ->
         val items = cartViewModel.items
-        val total by remember(items) { derivedStateOf { cartViewModel.total() } }
+        // derivedStateOf observará lecturas internas de estado (mutableStateListOf) en ViewModel
+        val total by remember { derivedStateOf { cartViewModel.total() } }
 
         Column(
             modifier = Modifier
@@ -78,7 +81,7 @@ fun CartScreen(
                     )
 
                     Button(
-                        onClick = { showModal = true },
+                        onClick = { showReceipt = true },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(containerColor = androidx.compose.ui.graphics.Color(0xFF2E8B57))
                     ) {
@@ -88,12 +91,27 @@ fun CartScreen(
             }
         }
 
-        // Modal de compra realizada
+        // Boleta de compra (detalle) y confirmación
+        ReceiptDialog(
+            show = showReceipt,
+            items = items,
+            onConfirm = {
+                // vaciar carrito y mostrar confirmación
+                cartViewModel.clearCart()
+                showReceipt = false
+                showConfirmation = true
+            },
+            onCancel = {
+                showReceipt = false
+            }
+        )
+
+        // Modal de confirmación simple
         ModalComponent(
-            show = showModal,
+            show = showConfirmation,
             title = "¡Compra realizada!",
             message = "Gracias por tu compra.",
-            onClose = { showModal = false }
+            onClose = { showConfirmation = false }
         )
     }
 }

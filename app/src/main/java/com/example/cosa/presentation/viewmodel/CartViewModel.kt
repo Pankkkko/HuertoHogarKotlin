@@ -18,7 +18,9 @@ class CartViewModel : ViewModel() {
     fun addProduct(cartItem: CartItem) {
         val existing = _items.indexOfFirst { it.productoId == cartItem.productoId }
         if (existing >= 0) {
-            _items[existing].cantidad += cartItem.cantidad
+            // Reemplazamos el elemento con una copia modificada para forzar recomposición
+            val prev = _items[existing]
+            _items[existing] = prev.copy(cantidad = prev.cantidad + cartItem.cantidad)
         } else {
             _items.add(cartItem)
         }
@@ -44,16 +46,24 @@ class CartViewModel : ViewModel() {
     }
 
     fun increase(productoId: String) {
-        _items.find { it.productoId == productoId }?.let {
-            it.cantidad += 1
+        val idx = _items.indexOfFirst { it.productoId == productoId }
+        if (idx >= 0) {
+            val it = _items[idx]
+            _items[idx] = it.copy(cantidad = it.cantidad + 1)
             recomputeCount()
         }
     }
 
     fun decrease(productoId: String) {
-        val it = _items.find { it.productoId == productoId } ?: return
-        it.cantidad -= 1
-        if (it.cantidad <= 0) _items.remove(it)
+        val idx = _items.indexOfFirst { it.productoId == productoId }
+        if (idx < 0) return
+        val it = _items[idx]
+        val newCantidad = it.cantidad - 1
+        if (newCantidad <= 0) {
+            _items.removeAt(idx)
+        } else {
+            _items[idx] = it.copy(cantidad = newCantidad)
+        }
         recomputeCount()
     }
 
