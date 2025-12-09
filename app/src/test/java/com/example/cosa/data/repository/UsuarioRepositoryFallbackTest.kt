@@ -26,15 +26,18 @@ class UsuarioRepositoryFallbackTest {
 
         override suspend fun getUsuarioPorCorreo(correo: String): Usuario? = users.find { it.correo == correo }
 
-        override suspend fun getUsuarioPorNombre(usuario: String): Usuario? = users.find { it.usuario == usuario }
+        // El modelo usa `nombre` (antes llamado `usuario` en versiones previas)
+        override suspend fun getUsuarioPorNombre(usuario: String): Usuario? = users.find { it.nombre == usuario }
 
         override suspend fun getAll(): List<Usuario> = users.toList()
 
         override suspend fun deleteById(id: Int) { users.removeAll { it.id == id } }
 
+        // La firma del DAO mantiene parámetros heredados; mapearlos a las propiedades actuales:
+        // `rut` se usa para `rol`, `usuario` se usa para `nombre`.
         override suspend fun updateById(id: Int, rut: String, usuario: String, correo: String, pass: String) {
             val idx = users.indexOfFirst { it.id == id }
-            if (idx >= 0) users[idx] = users[idx].copy(rut = rut, usuario = usuario, correo = correo, pass = pass)
+            if (idx >= 0) users[idx] = users[idx].copy(rol = rut, nombre = usuario, correo = correo, pass = pass)
         }
     }
 
@@ -43,11 +46,11 @@ class UsuarioRepositoryFallbackTest {
         val dao = InMemoryUsuarioDAO()
         val remote = mockk<UsuarioRemoteRepository>()
 
-        val created = Usuario(id = 99, rut = "r", usuario = "u_rem", correo = "rem@dom.cl", pass = "p")
+        val created = Usuario(id = 99, correo = "rem@dom.cl", pass = "p", nombre = "u_rem", rol = "admin", activo = true)
         coEvery { remote.crear(any()) } returns Result.success(created)
 
         val repo = UsuarioRepository(dao, remote)
-        val toCreate = Usuario(rut = "r", usuario = "u", correo = "c@dom.cl", pass = "p")
+        val toCreate = Usuario(id = 0, correo = "c@dom.cl", pass = "p", nombre = "u", rol = "user", activo = true)
 
         repo.registrar(toCreate)
 
@@ -67,7 +70,7 @@ class UsuarioRepositoryFallbackTest {
         coEvery { remote.crear(any()) } returns Result.failure(Exception("no net"))
 
         val repo = UsuarioRepository(dao, remote)
-        val toCreate = Usuario(rut = "r", usuario = "u_local", correo = "local@dom.cl", pass = "p")
+        val toCreate = Usuario(id = 0, correo = "local@dom.cl", pass = "p", nombre = "u_local", rol = "user", activo = true)
 
         repo.registrar(toCreate)
 
@@ -83,7 +86,7 @@ class UsuarioRepositoryFallbackTest {
         val dao = InMemoryUsuarioDAO()
         val remote = mockk<UsuarioRemoteRepository>()
 
-        val remoteUser = Usuario(id = 5, rut = "r5", usuario = "u5", correo = "r5@dom.cl", pass = "p")
+        val remoteUser = Usuario(id = 5, correo = "r5@dom.cl", pass = "p", nombre = "u5", rol = "user", activo = true)
         coEvery { remote.obtenerTodos() } returns Result.success(listOf(remoteUser))
 
         val repo = UsuarioRepository(dao, remote)
@@ -100,4 +103,3 @@ class UsuarioRepositoryFallbackTest {
         coVerify(exactly = 1) { remote.obtenerTodos() }
     }
 }
-

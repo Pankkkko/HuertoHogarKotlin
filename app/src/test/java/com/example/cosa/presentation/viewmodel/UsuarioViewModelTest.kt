@@ -25,15 +25,17 @@ class UsuarioViewModelTest {
 
         override suspend fun getUsuarioPorCorreo(correo: String): Usuario? = users.find { it.correo == correo }
 
-        override suspend fun getUsuarioPorNombre(usuario: String): Usuario? = users.find { it.usuario == usuario }
+        // El modelo actual usa `nombre` (antes `usuario`)
+        override suspend fun getUsuarioPorNombre(usuario: String): Usuario? = users.find { it.nombre == usuario }
 
         override suspend fun getAll(): List<Usuario> = users.toList()
 
         override suspend fun deleteById(id: Int) { users.removeAll { it.id == id } }
 
+        // Mapear parámetros heredados a propiedades actuales: `rut` -> `rol`, `usuario` -> `nombre`
         override suspend fun updateById(id: Int, rut: String, usuario: String, correo: String, pass: String) {
             val idx = users.indexOfFirst { it.id == id }
-            if (idx >= 0) users[idx] = users[idx].copy(rut = rut, usuario = usuario, correo = correo, pass = pass)
+            if (idx >= 0) users[idx] = users[idx].copy(rol = rut, nombre = usuario, correo = correo, pass = pass)
         }
     }
 

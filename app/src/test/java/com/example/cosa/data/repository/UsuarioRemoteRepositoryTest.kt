@@ -15,10 +15,11 @@ class UsuarioRemoteRepositoryTest {
 
     private fun sampleUsuarioDto(id: Int = 1): UsuarioDto = UsuarioDto(
         id = id,
-        rut = "11111111-1",
-        usuario = "user$id",
-        correo = "u$id@dom.cl",
-        pass = "pwd"
+        nombre = "user$id",
+        email = "u$id@dom.cl",
+        pass = "pwd",
+        rol = "admin",
+        activo = true
     )
 
     @Test
@@ -58,13 +59,22 @@ class UsuarioRemoteRepositoryTest {
         coEvery { api.crearUsuario(any()) } returns dto
 
         val repo = UsuarioRemoteRepository(api)
-        val usuario = Usuario(rut = dto.rut, usuario = dto.usuario, correo = dto.correo, pass = dto.pass)
+        // Construir un Usuario usando las propiedades reales del modelo
+        val usuario = Usuario(
+            id = dto.id,
+            correo = dto.email,
+            pass = dto.pass,
+            nombre = dto.nombre,
+            rol = dto.rol,
+            activo = dto.activo
+        )
         val res = repo.crear(usuario)
 
         assertTrue(res.isSuccess)
         val creado = res.getOrNull()
         assertNotNull(creado)
-        assertEquals(dto.correo, creado!!.correo)
+        // El DTO usa `email`, que mapea a `correo` en el dominio
+        assertEquals(dto.email, creado!!.correo)
 
         coVerify(exactly = 1) { api.crearUsuario(any()) }
     }
@@ -75,11 +85,17 @@ class UsuarioRemoteRepositoryTest {
         coEvery { api.crearUsuario(any()) } throws IOException("fail create")
 
         val repo = UsuarioRemoteRepository(api)
-        val usuario = Usuario(rut = "r", usuario = "u", correo = "c", pass = "p")
+        val usuario = Usuario(
+            id = 0,
+            correo = "c",
+            pass = "p",
+            nombre = "n",
+            rol = "user",
+            activo = true
+        )
         val res = repo.crear(usuario)
 
         assertTrue(res.isFailure)
         coVerify(exactly = 1) { api.crearUsuario(any()) }
     }
 }
-

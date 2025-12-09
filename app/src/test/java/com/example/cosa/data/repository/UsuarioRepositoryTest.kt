@@ -25,15 +25,17 @@ class UsuarioRepositoryTest {
 
         override suspend fun getUsuarioPorCorreo(correo: String): Usuario? = users.find { it.correo == correo }
 
-        override suspend fun getUsuarioPorNombre(usuario: String): Usuario? = users.find { it.usuario == usuario }
+        // El modelo usa `nombre` en lugar de `usuario`
+        override suspend fun getUsuarioPorNombre(usuario: String): Usuario? = users.find { it.nombre == usuario }
 
         override suspend fun getAll(): List<Usuario> = users.toList()
 
         override suspend fun deleteById(id: Int) { users.removeAll { it.id == id } }
 
+        // `rut` se mapea a `rol`, `usuario` se mapea a `nombre`
         override suspend fun updateById(id: Int, rut: String, usuario: String, correo: String, pass: String) {
             val idx = users.indexOfFirst { it.id == id }
-            if (idx >= 0) users[idx] = users[idx].copy(rut = rut, usuario = usuario, correo = correo, pass = pass)
+            if (idx >= 0) users[idx] = users[idx].copy(rol = rut, nombre = usuario, correo = correo, pass = pass)
         }
     }
 
@@ -42,12 +44,12 @@ class UsuarioRepositoryTest {
         val dao = InMemoryUsuarioDAO()
         val repo = UsuarioRepository(dao)
 
-        val usuario = Usuario(rut = "11111111-1", usuario = "user1", correo = "u1@dom.cl", pass = "pwd")
+        val usuario = Usuario(id = 0, correo = "u1@dom.cl", pass = "pwd", nombre = "user1", rol = "user", activo = true)
         repo.registrar(usuario)
 
         val all = dao.getAll()
         assertEquals(1, all.size)
-        assertEquals("user1", all[0].usuario)
+        assertEquals("user1", all[0].nombre)
         assertEquals("u1@dom.cl", all[0].correo)
     }
 
@@ -56,7 +58,7 @@ class UsuarioRepositoryTest {
         val dao = InMemoryUsuarioDAO()
         val repo = UsuarioRepository(dao)
 
-        val usuario = Usuario(rut = "22222222-2", usuario = "user2", correo = "u2@dom.cl", pass = "pwd")
+        val usuario = Usuario(id = 0, correo = "u2@dom.cl", pass = "pwd", nombre = "user2", rol = "user", activo = true)
         dao.insert(usuario)
 
         assertTrue(repo.existeCorreo("u2@dom.cl"))
@@ -68,11 +70,11 @@ class UsuarioRepositoryTest {
         val dao = InMemoryUsuarioDAO()
         val repo = UsuarioRepository(dao)
 
-        val usuario = Usuario(rut = "33333333-3", usuario = "user3", correo = "u3@dom.cl", pass = "pwd")
+        val usuario = Usuario(id = 0, correo = "u3@dom.cl", pass = "pwd", nombre = "user3", rol = "user", activo = true)
         dao.insert(usuario)
 
         val inserted = dao.getAll().first()
-        val actualizado = inserted.copy(usuario = "user3_new", correo = "u3_new@dom.cl")
+        val actualizado = inserted.copy(nombre = "user3_new", correo = "u3_new@dom.cl")
         repo.actualizarUsuario(actualizado)
 
         val fetched = dao.getUsuarioPorNombre("user3_new")
@@ -80,4 +82,3 @@ class UsuarioRepositoryTest {
         assertEquals("u3_new@dom.cl", fetched!!.correo)
     }
 }
-
